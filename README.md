@@ -44,13 +44,13 @@ Usage of gpt:
 Normally, the stdin input is considered a single USER prompt but `gpt` will also attempt to parse a plaintext conversation format. If the file starts with the guidemark immediately, no System prompt is assumed; the conversation is arbitrary-length, and does not have to adhere to some order. In Vim mode, it will also append an extra prompt marker.
 
 ```
-System, prompt here.
+System prompt here.
 
 	>>>>>>
-User, prompt here.
+User prompt here.
 
 	<<<<<<
-Assistant, continuation continuation here.
+Assistant continuation continuation here.
 ```
 
 ### Environment
