@@ -17,8 +17,6 @@ import (
 	"github.com/zalando/go-keyring"
 )
 
-const nop = "nop"
-
 var (
 	bg     = context.Background()
 	model  = ""
@@ -193,7 +191,7 @@ type message = openai.ChatCompletionMessage
 //     assistant message
 func parse(s string) (log []message) {
 	var (
-		re   = regexp.MustCompile(`\n?[\t\s]+(>{3,}|<{3,})\n`)
+		re   = regexp.MustCompile(`\n?[\t\s]*(>{3,}|<{3,})\n`)
 		conv = re.Split(s, -1)
 		mark = re.FindAllStringSubmatch(s, -1)
 		push = func(role string, content string) {
