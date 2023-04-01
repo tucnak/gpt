@@ -1,5 +1,6 @@
 # gpt
 ```bash
+go install github.com/tucnak/gpt@latest
 export OPENAI_API_KEY=sk-...
 export OPENAI_LOG_DIR=$HOME/gpt # /<time>.gpt.txt on every run
 echo 'Tell a joke.' | gpt -4
