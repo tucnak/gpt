@@ -39,6 +39,20 @@ Usage of gpt:
     	vim mode
 ```
 
+### Chat interface
+
+Normally, the stdin input is considered a single USER prompt but `gpt` will also attempt to parse a plaintext conversation format. If the file starts with the guidemark immediately, no System prompt is assumed; the conversation is arbitrary-length, and does not have to adhere to some order. In Vim mode, it will also append an extra prompt marker.
+
+```
+System, prompt here.
+
+	>>>>>>
+User, prompt here.
+
+	<<<<<<
+Assistant, continuation continuation here.
+```
+
 ### Environment
 
 By default, it will use `OPENAI_API_KEY` environment variable but there's also GNOME Keyring (Keychain on macOS) support that it reverts to, in case the api key wasn't set.
