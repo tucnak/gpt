@@ -18,12 +18,14 @@ import (
 )
 
 var (
-	bg     = context.Background()
-	model  = ""
-	apiKey = os.Getenv("OPENAI_API_KEY")
-	dir    = os.Getenv("OPENAI_LOG_DIR")
+	bg          = context.Background()
+	targetModel = ""
+	apiKey      = os.Getenv("OPENAI_API_KEY")
+	dir         = os.Getenv("OPENAI_LOG_DIR")
 
 	password    = flag.String("keyring", "", "store the password in keyring")
+	url         = flag.String("url", apiURLv1, "OpenAI API prefix override")
+	model       = flag.String("model", "", "model identifier override")
 	gpt3        = flag.Bool("3", false, "use gpt3.5-turbo")
 	gpt4        = flag.Bool("4", false, "use gpt4")
 	vim         = flag.Bool("vim", false, "vim mode")
@@ -42,6 +44,8 @@ var (
 )
 
 const (
+	apiURLv1 = "https://api.openai.com/v1"
+
 	system    = "system"
 	user      = "user"
 	assistant = "assistant"
@@ -86,11 +90,13 @@ func main() {
 			exit(1)
 		}
 		fmt.Println(*password)
-		return
+		exit(0)
+	case *model != "":
+		targetModel = *model
 	case *gpt3:
-		model = openai.GPT3Dot5Turbo
+		targetModel = openai.GPT3Dot5Turbo
 	case *gpt4:
-		model = openai.GPT4
+		targetModel = "gpt-4-turbo-2024-04-09"
 	default:
 		flag.Usage()
 		exit(1)
@@ -116,7 +122,9 @@ func main() {
 	}
 	var req = request(b)
 
-	client := openai.NewClient(apiKey)
+	conf := openai.DefaultConfig(apiKey)
+	conf.BaseURL = *url
+	client := openai.NewClientWithConfig(conf)
 	stream, err := client.CreateChatCompletionStream(bg, req)
 	if err != nil {
 		panic(err)
@@ -157,8 +165,8 @@ func main() {
 			exit(1)
 		}
 		chunk := resp.Choices[0].Delta.Content
-		fmt.Printf(chunk)
-		fmt.Fprintf(f, chunk)
+		fmt.Print(chunk)
+		fmt.Fprint(f, chunk)
 	}
 }
 
@@ -168,7 +176,7 @@ func request(b []byte) openai.ChatCompletionRequest {
 		os.Exit(0)
 	}
 	return openai.ChatCompletionRequest{
-		Model:            model,
+		Model:            targetModel,
 		Messages:         parse(s),
 		MaxTokens:        *maxLength,
 		Temperature:      float32(*temperature),
@@ -184,11 +192,11 @@ type message = openai.ChatCompletionMessage
 // Split is the function that splits the input into system/user/assistant
 // messages. The input is provided in the following format:
 //
-//     system message
-//     \t>>>>>>>
-//     user message
-//     \t<<<<<<<
-//     assistant message
+//	system message
+//	\t>>>>>>>
+//	user message
+//	\t<<<<<<<
+//	assistant message
 func parse(s string) (log []message) {
 	var (
 		re   = regexp.MustCompile(`\n?[\t\s]*(>{3,}|<{3,})\n`)
